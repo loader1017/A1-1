@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import matplotlib.image as mpimg
 import numpy as np
 import pandas as pd
 
@@ -95,21 +96,30 @@ class DataAnalyzer:
         upper = q3 + threshold * iqr
         return (values < lower) | (values > upper)
 
-    def add_image_features(self, articles, image_size=(32, 32), random_state=42):
+    def image_path(self, prod_cat_code, prod_subcat_code):
+        return self.data_path / "images" / str(prod_cat_code) / f"{prod_subcat_code}.jpg"
+
+    def add_image_features(self, articles):
         """
-        상품 코드 기반 고정 시드로 합성 이미지 배열을 생성하고 픽셀 통계를 추출한다.
-        (n, H, W, 3) 배열 전체에 NumPy 축 연산을 적용해 for loop 없이 배치 처리한다.
+        상품별 이미지 파일을 읽고 NumPy 배열 연산으로 픽셀 통계를 추출한다.
+        파일 I/O는 상품마다 순회하되, 픽셀 mean/std 계산은 np.mean/np.std 벡터 연산으로 처리한다.
+        이미지가 없는 상품은 결측치로 유지한다.
         """
         articles = articles.copy()
-        n = len(articles)
-        h, w = image_size
+        articles["image_mean"] = np.nan
+        articles["image_std"] = np.nan
 
-        rng = np.random.default_rng(random_state)
-        images = rng.integers(0, 256, size=(n, h, w, 3), dtype=np.uint8)
-
-        pixels = images.astype(np.float32) / 255.0
-        articles["image_mean"] = pixels.mean(axis=(1, 2, 3))
-        articles["image_std"] = pixels.std(axis=(1, 2, 3))
+        for idx, row in articles.iterrows():
+            path = self.image_path(row["prod_cat_code"], row["prod_subcat_code"])
+            if path.is_file():
+                image = mpimg.imread(str(path))
+                pixels = image.astype(np.float32)
+                if np.issubdtype(image.dtype, np.integer):
+                    pixels /= np.iinfo(image.dtype).max
+                else:
+                    pixels = np.clip(pixels, 0.0, 1.0)
+                articles.at[idx, "image_mean"] = np.mean(pixels)
+                articles.at[idx, "image_std"] = np.std(pixels)
 
         return articles
 

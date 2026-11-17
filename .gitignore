@@ -3,7 +3,8 @@
 .ipynb_checkpoints/
 __pycache__/
 
-/data/
+/data/*
+!/data/images/
 /A1-1.md
 /A1-1.pdf
 /notebooks/prepare_hm_sample.ipynb
