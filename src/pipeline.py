@@ -95,6 +95,24 @@ class DataAnalyzer:
         upper = q3 + threshold * iqr
         return (values < lower) | (values > upper)
 
+    def add_image_features(self, articles, image_size=(32, 32), random_state=42):
+        """
+        상품 코드 기반 고정 시드로 합성 이미지 배열을 생성하고 픽셀 통계를 추출한다.
+        (n, H, W, 3) 배열 전체에 NumPy 축 연산을 적용해 for loop 없이 배치 처리한다.
+        """
+        articles = articles.copy()
+        n = len(articles)
+        h, w = image_size
+
+        rng = np.random.default_rng(random_state)
+        images = rng.integers(0, 256, size=(n, h, w, 3), dtype=np.uint8)
+
+        pixels = images.astype(np.float32) / 255.0
+        articles["image_mean"] = pixels.mean(axis=(1, 2, 3))
+        articles["image_std"] = pixels.std(axis=(1, 2, 3))
+
+        return articles
+
     @staticmethod
     def add_text_features(data):
         return data.assign(product_name_length=data["prod_subcat"].str.len())
