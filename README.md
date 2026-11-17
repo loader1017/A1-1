@@ -1,0 +1,57 @@
+# Retail Case Study 구매 패턴과 RFM 고객 세분화
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.11">
+  <img src="https://img.shields.io/badge/NumPy-013243?style=flat-square&logo=numpy&logoColor=white" alt="NumPy">
+  <img src="https://img.shields.io/badge/pandas-150458?style=flat-square&logo=pandas&logoColor=white" alt="pandas">
+  <img src="https://img.shields.io/badge/Matplotlib-11557C?style=flat-square" alt="Matplotlib">
+  <img src="https://img.shields.io/badge/seaborn-4C72B0?style=flat-square" alt="seaborn">
+  <img src="https://img.shields.io/badge/Jupyter_Notebook-F37626?style=flat-square&logo=jupyter&logoColor=white" alt="Jupyter Notebook">
+</p>
+
+고객, 상품, 거래 데이터를 연결해 구매 패턴을 분석하고 RFM으로 고객을 분류한다. [분석 노트북](notebooks/analysis_report.ipynb)은 결측치 처리, IQR 이상치 탐지, 인구통계 피처, 통계 분석, 여섯 유형의 시각화를 포함한다. 전처리와 집계는 [DataAnalyzer](src/pipeline.py)에 구현했다.
+
+## 데이터와 분석 범위
+
+출처는 [Retail Case Study Data](https://www.kaggle.com/datasets/darpan25bajaj/retail-case-study-data)다. 거래 CSV의 고객 ID를 정렬해 시드 42로 100명을 뽑고, 선택된 고객의 전체 관측 기간 거래를 유지했다. 반품에 해당하는 음수 거래 금액은 분석에서 제외해 고객 100명, 거래 390행, 상품 23종이 추출됐다.
+
+| 입력 | 사용한 정보 |
+| --- | --- |
+| `Transactions.csv` | 거래일, 고객 ID, 상품 코드, 수량, 거래 금액 |
+| `Customer.csv` | 고객 ID, 생년월일, 성별, 도시 코드 |
+| `prod_cat_info.csv` | 상품 카테고리 코드, 카테고리명, 서브카테고리명 |
+
+RFM 기준일은 표본의 마지막 거래일인 **2014-02-19**다. Recency는 마지막 구매 후 지난 일수, Frequency는 서로 다른 구매 날짜 수, Monetary는 거래 금액 합계다.
+
+## 분석 결과
+
+IQR 기준을 벗어난 거래 금액은 9행(2.31%)이었다. 가격 분포 비교에 이상치 표시를 사용하고 RFM에는 전체 거래를 사용했다.
+
+| 세그먼트 | 고객 수 | 평균 구매일 수 | 구매금액 비중 |
+| --- | ---: | ---: | ---: |
+| VIP | 14명 | 6.21 | 24.07% |
+| Loyal | 9명 | 6.00 | 12.72% |
+| Regular | 35명 | 3.34 | 30.54% |
+| At Risk | 40명 | 3.22 | 31.79% |
+| New | 2명 | 1.00 | 0.88% |
+
+## 비즈니스 인사이트
+
+1. **At Risk 고객 재활성화 우선 검토.** At Risk 40명이 구매금액의 31.79%를 차지하며 전체 세그먼트 중 가장 높다. 마지막 구매가 상대적으로 오래된 고객군이므로 과거 구매금액과 구매 간격을 함께 보고 연락 대상을 좁혀 재구매를 유도한다. 선별된 고객의 후속 구매율을 대조군과 비교한다.
+2. **VIP 고객 유지.** VIP 14명이 구매금액의 24.07%를 차지한다. 평균 구매일 수는 6.21일로 가장 높으며, 선호 카테고리의 신상품이나 프로모션을 안내해 재구매를 유도한다. VIP 내 대조군을 두고 동일 기간의 재구매율과 고객당 구매금액을 비교한다.
+3. **Loyal과 Regular의 다음 구매 유도.** Loyal 평균 구매일 수는 6.00일, Regular는 3.34일이었다. Loyal에는 반복 구매한 카테고리의 후속 상품을, Regular에는 관심 상품과 함께 구매할 만한 상품을 안내해 구매일 수 증가를 목표로 한다. 세그먼트마다 대조군을 두고 후속 구매일 수를 비교한다.
+
+## 로컬 실행
+
+1. Kaggle에서 [Retail Case Study Data](https://www.kaggle.com/datasets/darpan25bajaj/retail-case-study-data)의 세 파일을 내려받는다.
+2. 저장소 루트의 `data/` 아래에 세 CSV(`Transactions.csv`, `Customer.csv`, `prod_cat_info.csv`)를 둔다. 다른 위치에 두었다면 Jupyter를 실행하기 전에 `RETAIL_DATA_DIR` 환경변수에 데이터 디렉터리를 지정한다.
+3. Python 3.11 환경에서 아래 명령으로 Jupyter를 열고, `notebooks/analysis_report.ipynb`의 셀을 위에서부터 실행한다.
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt notebook
+python -m jupyter notebook
+```
+
+거래 CSV는 고객 ID 수집과 거래 추출을 위해 청크 단위로 두 번 읽는다. 노트북에 저장된 표와 차트는 고객 100명 표본의 집계 결과다.
