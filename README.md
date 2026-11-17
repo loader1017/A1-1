@@ -1,13 +1,5 @@
 # Retail Case Study 구매 패턴과 RFM 고객 세분화
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.11">
-  <img src="https://img.shields.io/badge/NumPy-013243?style=flat-square&logo=numpy&logoColor=white" alt="NumPy">
-  <img src="https://img.shields.io/badge/pandas-150458?style=flat-square&logo=pandas&logoColor=white" alt="pandas">
-  <img src="https://img.shields.io/badge/Matplotlib-11557C?style=flat-square" alt="Matplotlib">
-  <img src="https://img.shields.io/badge/seaborn-4C72B0?style=flat-square" alt="seaborn">
-  <img src="https://img.shields.io/badge/Jupyter_Notebook-F37626?style=flat-square&logo=jupyter&logoColor=white" alt="Jupyter Notebook">
-</p>
 
 고객, 상품, 거래 데이터를 연결해 구매 패턴을 분석하고 RFM으로 고객을 분류한다. [분석 노트북](notebooks/analysis_report.ipynb)은 결측치 처리, IQR 이상치 탐지, 인구통계 피처, 통계 분석, 여섯 유형의 시각화를 포함한다. 전처리와 집계는 [DataAnalyzer](src/pipeline.py)에 구현했다.
 
